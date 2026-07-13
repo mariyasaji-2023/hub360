@@ -4,6 +4,7 @@ import { Home as HomeIcon, KeyRound } from "lucide-react";
 import ImageUploader from "../../components/ImageUploader.jsx";
 import VerticalEyebrow from "../../components/VerticalEyebrow.jsx";
 import { verticals } from "../../data/verticals.js";
+import { API_URL } from "../../lib/api.js";
 
 const rentHub = verticals.find((v) => v.id === "rent-hub-360");
 
@@ -50,7 +51,7 @@ export default function PostProperty() {
     images.forEach(({ file }) => data.append("photos", file));
 
     try {
-      const res = await fetch("/api/properties", { method: "POST", body: data });
+      const res = await fetch(`${API_URL}/api/properties`, { method: "POST", body: data });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.message || "Failed to submit listing");

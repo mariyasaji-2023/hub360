@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { BedDouble, Expand, ImageOff, MapPin, Sofa } from "lucide-react";
 import ImageLightbox from "./ImageLightbox.jsx";
+import { resolveImageUrl } from "../lib/api.js";
 
 export default function PropertyCard({ property }) {
-  const images = property.images || [];
+  const images = (property.images || []).map(resolveImageUrl);
   const [previewIndex, setPreviewIndex] = useState(null);
 
   return (

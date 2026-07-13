@@ -5,6 +5,7 @@ import PropertyCard from "../../components/PropertyCard.jsx";
 import PropertyCardSkeleton from "../../components/PropertyCardSkeleton.jsx";
 import VerticalEyebrow from "../../components/VerticalEyebrow.jsx";
 import { verticals } from "../../data/verticals.js";
+import { API_URL } from "../../lib/api.js";
 
 const rentHub = verticals.find((v) => v.id === "rent-hub-360");
 
@@ -30,7 +31,7 @@ export default function FindProperty() {
       Object.entries(filters).filter(([, value]) => value && value !== "Any")
     );
 
-    fetch(`/api/properties?${new URLSearchParams(params)}`, { signal: controller.signal })
+    fetch(`${API_URL}/api/properties?${new URLSearchParams(params)}`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load properties");
         return res.json();
