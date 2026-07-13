@@ -39,7 +39,7 @@ export const verticals = [
       "Digital Service Marketplace",
     ],
     path: "/services/gate-hub-360",
-    logo: "/logos/gatehub-360.png",
+    logo: "/logos/designhub-360.png",
     live: false,
   },
   {
@@ -58,7 +58,7 @@ export const verticals = [
       "Software Solutions",
     ],
     path: "/services/design-hub-360",
-    logo: "/logos/designhub-360.png",
+    logo: "/logos/gatehub-360.png",
     live: false,
   },
 ];
