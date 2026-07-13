@@ -39,7 +39,7 @@ export default function ContactUs() {
             <Phone size={18} className="text-accent" /> +91 00000 00000
           </li>
           <li className="flex items-center gap-3">
-            <Mail size={18} className="text-accent" /> hello@hub360group.com
+            <Mail size={18} className="text-accent" /> hub360company@gmail.com
           </li>
           <li className="flex items-center gap-3">
             <MapPin size={18} className="text-accent" /> 1st Floor, Arya Hub Mall, Whitefield, Bengaluru 560066

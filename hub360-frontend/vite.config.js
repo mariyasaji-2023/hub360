@@ -6,8 +6,8 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Uncomment once the Express/Node backend is running
-      // "/api": "http://localhost:5000",
+      "/api": "http://localhost:5000",
+      "/uploads": "http://localhost:5000",
     },
   },
 });

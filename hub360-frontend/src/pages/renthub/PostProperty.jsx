@@ -30,6 +30,7 @@ export default function PostProperty() {
   const [images, setImages] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const isSale = intent === "sale";
 
@@ -41,25 +42,28 @@ export default function PostProperty() {
   async function handleSubmit(e) {
     e.preventDefault();
     setSubmitting(true);
-    // TODO: wire this up once the backend exists. Photos need
-    // multipart/form-data, so build a FormData instead of JSON, e.g.:
-    // const data = new FormData();
-    // data.append("listingIntent", intent); // "rent" or "sale"
-    // Object.entries(form).forEach(([key, value]) => data.append(key, value));
-    // images.forEach(({ file }) => data.append("photos", file));
-    // await fetch("/api/properties", { method: "POST", body: data });
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    console.log(
-      "New property submission:",
-      { ...form, listingIntent: intent },
-      "photos:",
-      images.map((i) => i.file.name)
-    );
-    images.forEach((img) => URL.revokeObjectURL(img.url));
-    setSubmitting(false);
-    setSubmitted(true);
-    setForm(initialForm);
-    setImages([]);
+    setError("");
+
+    const data = new FormData();
+    data.append("listingIntent", intent);
+    Object.entries(form).forEach(([key, value]) => data.append(key, value));
+    images.forEach(({ file }) => data.append("photos", file));
+
+    try {
+      const res = await fetch("/api/properties", { method: "POST", body: data });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Failed to submit listing");
+      }
+      images.forEach((img) => URL.revokeObjectURL(img.url));
+      setSubmitted(true);
+      setForm(initialForm);
+      setImages([]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -100,6 +104,12 @@ export default function PostProperty() {
         <p className="mt-6 bg-grow/10 text-grow text-sm font-semibold rounded-lg px-4 py-3 animate-fade-up">
           Your property was submitted. Our team will get in touch to verify
           the listing.
+        </p>
+      )}
+
+      {error && (
+        <p className="mt-6 bg-red-50 text-red-600 text-sm font-semibold rounded-lg px-4 py-3 animate-fade-up">
+          {error}
         </p>
       )}
 

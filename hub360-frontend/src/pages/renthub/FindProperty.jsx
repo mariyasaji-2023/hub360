@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Home as HomeIcon, KeyRound, Search } from "lucide-react";
 import PropertyCard from "../../components/PropertyCard.jsx";
 import PropertyCardSkeleton from "../../components/PropertyCardSkeleton.jsx";
 import VerticalEyebrow from "../../components/VerticalEyebrow.jsx";
-import { mockProperties } from "../../data/mockProperties.js";
 import { verticals } from "../../data/verticals.js";
 
 const rentHub = verticals.find((v) => v.id === "rent-hub-360");
@@ -13,36 +12,36 @@ const initialFilters = { city: "", type: "Any", maxRent: "", bedrooms: "Any", fu
 
 export default function FindProperty() {
   const [filters, setFilters] = useState(initialFilters);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   function handleChange(e) {
     const { name, value } = e.target;
     setFilters((f) => ({ ...f, [name]: value }));
   }
 
-  // TODO: once the backend exists, replace this with:
-  // useEffect(() => { fetch(`/api/properties?${new URLSearchParams(filters)}`)... }, [filters])
-  const results = useMemo(() => {
-    return mockProperties.filter((p) => {
-      if (filters.city && !p.city.toLowerCase().includes(filters.city.toLowerCase()))
-        return false;
-      if (filters.type !== "Any" && p.type !== filters.type) return false;
-      if (filters.maxRent && p.rent > Number(filters.maxRent)) return false;
-      if (filters.bedrooms !== "Any" && String(p.bedrooms) !== filters.bedrooms)
-        return false;
-      if (filters.furnishing !== "Any" && p.furnishing !== filters.furnishing)
-        return false;
-      return true;
-    });
-  }, [filters]);
-
-  // Simulates the round-trip a real search request would make, so the
-  // skeleton state is visible whenever a filter changes. Swap the
-  // timeout for the resolved fetch above once the API exists.
   useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
-    const timeout = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timeout);
+    setError("");
+
+    const params = Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value && value !== "Any")
+    );
+
+    fetch(`/api/properties?${new URLSearchParams(params)}`, { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load properties");
+        return res.json();
+      })
+      .then(setResults)
+      .catch((err) => {
+        if (err.name !== "AbortError") setError(err.message);
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
   }, [filters]);
 
   return (
@@ -146,7 +145,11 @@ export default function FindProperty() {
         </p>
       </div>
 
-      {loading ? (
+      {error ? (
+        <div className="mt-6 text-center bg-red-50 text-red-600 rounded-2xl p-12 animate-fade-up">
+          <p className="font-semibold">{error}</p>
+        </div>
+      ) : loading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {Array.from({ length: 3 }).map((_, i) => (
             <PropertyCardSkeleton key={i} />
@@ -164,7 +167,7 @@ export default function FindProperty() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {results.map((p, i) => (
-            <div key={p.id} className="animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
+            <div key={p._id} className="animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
               <PropertyCard property={p} />
             </div>
           ))}
